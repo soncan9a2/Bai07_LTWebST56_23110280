@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" 
+      layout:decorate="~{admin/layout-admin.html}">
+
+<section layout:fragment="content">
+    <div class="container-fluid">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="h4 mb-1" th:text="${category.isEdit} ? #{iotstar.value.editCate} : #{iotstar.value.addCate}"></h2>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item"><a href="#" class="text-decoration-none">Dashboard</a></li>
+                        <li class="breadcrumb-item"><a th:href="@{/admin/categories/searchpaginated}" class="text-decoration-none">Categories</a></li>
+                        <li class="breadcrumb-item active" th:text="${category.isEdit} ? 'Edit' : 'Add'"></li>
+                    </ol>
+                </nav>
+            </div>
+            <div>
+                <a th:href="@{/admin/categories/searchpaginated}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i><span th:text="#{iotstar.value.back}">Back</span>
+                </a>
+            </div>
+        </div>
+        
+        <!-- Category Form Card -->
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">
+                            <i th:class="${category.isEdit} ? 'fas fa-edit me-2' : 'fas fa-plus me-2'"></i>
+                            <span th:text="${category.isEdit} ? #{iotstar.value.editCate} : #{iotstar.value.addCate}"></span>
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form th:action="@{/admin/categories/saveOrUpdate}" 
+                              method="POST" 
+                              th:object="${category}"
+                              enctype="multipart/form-data"
+                              novalidate>
+                            
+                            <!-- Category ID (only for edit) -->
+                            <div class="mb-3" th:if="${category.isEdit}">
+                                <label for="cateId" class="form-label">
+                                    <i class="fas fa-hashtag me-1"></i><span th:text="#{iotstar.value.categoryId}">Category ID</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control bg-light" 
+                                       id="cateId"
+                                       th:field="*{cateId}" 
+                                       readonly
+                                       placeholder="Auto-generated ID">
+                                <div class="form-text">This ID is automatically generated and cannot be changed.</div>
+                            </div>
+                            
+                            <!-- Category Name -->
+                            <div class="mb-3">
+                                <label for="cateName" class="form-label">
+                                    <i class="fas fa-tag me-1"></i><span th:text="#{iotstar.value.categoryName}">Category Name</span> <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control"
+                                       th:class="${#fields.hasErrors('cateName')} ? 'form-control is-invalid' : 'form-control'"
+                                       id="cateName"
+                                       th:field="*{cateName}" 
+                                       th:placeholder="#{iotstar.value.categoryNamePlaceholder}"
+                                       maxlength="200">
+                                <div th:if="${#fields.hasErrors('cateName')}" class="invalid-feedback">
+                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                    <span th:errors="*{cateName}"></span>
+                                </div>
+                                <div class="form-text">Category name must be between 1 and 200 characters.</div>
+                            </div>
+                            
+                            <!-- Current Icon (for edit) -->
+                            <div class="mb-3" th:if="${category.isEdit and category.icons != null}">
+                                <label class="form-label">
+                                    <i class="fas fa-image me-1"></i>Current Icon
+                                </label>
+                                <div class="d-flex align-items-center">
+                                    <img th:src="@{'/uploads/' + ${category.icons}}" 
+                                         alt="Category Icon" 
+                                         class="img-thumbnail me-3" 
+                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                    <span th:text="${category.icons}" class="text-muted"></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Icon Upload -->
+                            <div class="mb-3">
+                                <label for="iconFile" class="form-label">
+                                    <i class="fas fa-upload me-1"></i>Category Icon
+                                    <span th:unless="${category.isEdit}" class="text-danger">*</span>
+                                </label>
+                                <input type="file" 
+                                       class="form-control" 
+                                       id="iconFile"
+                                       th:field="*{iconFile}"
+                                       accept="image/*">
+                                <div class="form-text">
+                                    Upload an icon for this category. Supported formats: JPG, PNG, GIF (Max: 10MB)
+                                </div>
+                            </div>
+                            
+                            <!-- Status -->
+                            <div class="mb-3">
+                                <label for="status" class="form-label">
+                                    <i class="fas fa-toggle-on me-1"></i>Status
+                                </label>
+                                <select class="form-select" id="status" th:field="*{status}">
+                                    <option value="1">Active</option>
+                                    <option value="0">Inactive</option>
+                                </select>
+                                <div class="form-text">Set the status of this category.</div>
+                            </div>
+                            
+                            <!-- Hidden field for isEdit -->
+                            <input type="hidden" th:field="*{isEdit}">
+                            
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <a th:href="@{/admin/categories/searchpaginated}" 
+                                   class="btn btn-outline-secondary">
+                                    <i class="fas fa-times me-2"></i><span th:text="#{iotstar.value.cancel}">Cancel</span>
+                                </a>
+                                <div>
+                                    <button type="reset" class="btn btn-outline-warning me-2">
+                                        <i class="fas fa-undo me-2"></i>Reset
+                                    </button>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i th:class="${category.isEdit} ? 'fas fa-save me-2' : 'fas fa-plus me-2'"></i>
+                                        <span th:text="${category.isEdit} ? #{iotstar.value.editCate} : #{iotstar.value.addCate}"></span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                
+                <!-- Help Card -->
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-info-circle me-2 text-info"></i>Help & Guidelines
+                        </h6>
+                        <ul class="mb-0 small text-muted">
+                            <li>Category name is required and must be unique</li>
+                            <li>Maximum length for category name is 200 characters</li>
+                            <li>Use descriptive names that clearly identify the category</li>
+                            <li>Avoid special characters that might cause issues</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+</html>
